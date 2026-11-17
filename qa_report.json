@@ -1,0 +1,82 @@
+{
+  "fixture": "synthetic",
+  "review": {
+    "issues": [
+      {
+        "code": "duplicate",
+        "row": 18,
+        "frame": 8,
+        "track_id": 2,
+        "detail": "Track appears more than once in this frame."
+      },
+      {
+        "code": "invalid_visibility",
+        "row": 40,
+        "frame": 20,
+        "track_id": 1,
+        "detail": "Visibility must be between 0 and 1."
+      },
+      {
+        "code": "invalid_box",
+        "row": 84,
+        "frame": 42,
+        "track_id": 1,
+        "detail": "Box must have positive dimensions and fit inside the frame."
+      },
+      {
+        "code": "track_gap",
+        "row": 30,
+        "frame": 15,
+        "track_id": 1,
+        "detail": "Missing frames 14\u201314."
+      },
+      {
+        "code": "track_gap",
+        "row": 86,
+        "frame": 43,
+        "track_id": 1,
+        "detail": "Missing frames 42\u201342."
+      },
+      {
+        "code": "label_change",
+        "row": 53,
+        "frame": 26,
+        "track_id": 2,
+        "detail": "Track class changed from cart to pedestrian."
+      },
+      {
+        "code": "label_change",
+        "row": 55,
+        "frame": 27,
+        "track_id": 2,
+        "detail": "Track class changed from pedestrian to cart."
+      },
+      {
+        "code": "center_jump",
+        "row": 67,
+        "frame": 33,
+        "track_id": 2,
+        "detail": "Center moved 108.0 pixels per frame."
+      },
+      {
+        "code": "center_jump",
+        "row": 69,
+        "frame": 34,
+        "track_id": 2,
+        "detail": "Center moved 122.0 pixels per frame."
+      }
+    ],
+    "counts": {
+      "center_jump": 2,
+      "duplicate": 1,
+      "invalid_box": 1,
+      "invalid_visibility": 1,
+      "label_change": 2,
+      "track_gap": 2
+    }
+  },
+  "corrected": {
+    "issues": [],
+    "counts": {}
+  }
+}

@@ -1,0 +1,93 @@
+<!doctype html>
+<html lang="en">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Video annotation QA</title>
+<style>
+*{box-sizing:border-box}body{background:#101827;color:#eef3fb;font:16px system-ui;margin:0}
+main{max-width:1100px;margin:auto;padding:36px 24px}h1{margin:0 0 8px}p{color:#bac8dc}
+.layout{display:grid;grid-template-columns:minmax(0,2fr) minmax(235px,1fr);gap:20px}
+section,aside{background:#182337;border:1px solid #35445c;border-radius:14px;padding:16px}
+canvas{display:block;width:100%;height:auto;background:#0e1724;border-radius:8px}
+.controls{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-top:14px}
+input[type=range]{flex:1;min-width:100px}button,select{background:#293d59;color:#fff;border:1px solid #6580a3;border-radius:6px;padding:8px 10px;font:inherit}
+button{cursor:pointer}aside h2{font-size:1.1em;margin:0 0 12px}ol{padding-left:20px}li{margin-bottom:8px}li button{text-align:left;width:100%}small{color:#c5d1e3}
+@media(max-width:760px){.layout{grid-template-columns:1fr}}
+</style>
+<main>
+<h1>Video annotation QA</h1>
+<p>Inspect tracking labels on a 48-frame synthetic scene. The pedestrian passes behind a foreground post.</p>
+<div class="layout">
+<section aria-label="Frame preview">
+<canvas id="scene" width="640" height="360" aria-label="Synthetic pedestrian and cart tracking scene"></canvas>
+<div class="controls">
+<button id="play" type="button">Play</button>
+<input id="frame" type="range" min="1" max="48" value="1" aria-label="Frame">
+<output id="frameNumber" for="frame"></output>
+<label>Labels <select id="mode"><option value="faulty">Needs review</option><option value="clean">Corrected</option></select></label>
+</div>
+</section>
+<aside><h2 id="issueHead"></h2><small id="frameIssues"></small><ol id="issueList"></ol></aside>
+</div>
+</main>
+<script>
+const data = __DATA__;
+const byId = id => document.getElementById(id);
+const canvas = byId('scene'), ctx = canvas.getContext('2d');
+const frame = byId('frame'), mode = byId('mode'), play = byId('play');
+let timer;
+function rect(x,y,w,h,color){ctx.fillStyle=color;ctx.fillRect(x,y,w,h);}
+function draw(){
+  const n = Number(frame.value);
+  byId('frameNumber').value = n + ' / 48';
+  rect(0,0,640,360,'#26384f'); rect(0,215,640,145,'#152438');
+  rect(0,280,640,3,'#98a7bb');
+  for(let x=24;x<640;x+=70) rect(x,317,36,3,'#62728b');
+  for(const r of data.clean.filter(r=>r.frame===n)){
+    const {x,y,width:w,height:h}=r;
+    if(r.track_id===1){
+      ctx.fillStyle='#ffe5b4';ctx.beginPath();ctx.arc(x+18,y+12,12,0,Math.PI*2);ctx.fill();
+      rect(x+2,y+24,w-4,46,'#f4b561');rect(x+5,y+70,10,30,'#b4774c');
+      rect(x+21,y+70,10,30,'#b4774c');
+    }else{
+      rect(x,y+4,w,h-13,'#86b9eb');
+      for(const wheel of [x+14,x+54]){
+        ctx.fillStyle='#b8c6da';ctx.beginPath();ctx.arc(wheel,y+h-7,7,0,Math.PI*2);ctx.fill();
+      }
+    }
+  }
+  rect(294,68,22,151,'#78889e');
+  for(const r of data[mode.value].filter(r=>r.frame===n)){
+    ctx.strokeStyle=r.track_id===1?'#fbe096':'#79edc6';
+    ctx.lineWidth=2;ctx.strokeRect(r.x,r.y,r.width,r.height);
+    ctx.font='13px system-ui';
+    ctx.fillStyle=ctx.strokeStyle;
+    ctx.fillText('#'+r.track_id+' '+r.label+' · '+r.visibility,Math.min(r.x,500),r.y-6);
+  }
+  const active = mode.value==='faulty' ? data.issues.filter(i=>i.frame===n) : [];
+  byId('frameIssues').textContent = active.length
+    ? active.map(i=>'Track '+i.track_id+': '+i.detail).join(' ') : 'No findings on this frame.';
+}
+function stop(){
+  clearInterval(timer);timer=undefined;play.textContent='Play';
+}
+function refresh(){
+  const items = mode.value==='faulty' ? data.issues : [];
+  byId('issueHead').textContent=items.length+' QA findings';
+  byId('issueList').replaceChildren(...items.map(item=>{
+    const li=document.createElement('li'), button=document.createElement('button');
+    button.type='button';button.textContent='Frame '+item.frame+' · '+item.code.replaceAll('_',' ');
+    button.onclick=()=>{stop();frame.value=item.frame;draw();};
+    li.append(button);return li;
+  }));
+  draw();
+}
+frame.oninput=draw;mode.onchange=refresh;
+play.onclick=()=>{
+  if(timer){stop();return;}
+  play.textContent='Pause';
+  timer=setInterval(()=>{frame.value=(Number(frame.value)%48)+1;draw();},125);
+};
+refresh();
+</script>
+</html>
